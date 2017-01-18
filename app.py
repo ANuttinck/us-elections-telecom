@@ -27,7 +27,7 @@ def index():
 @app.route("/donorschoose/projects")
 def donorschoose_projects():
     # connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
-    connection = MongoClient("mongodb://teamMorpho:issyLesMoules!@35.164.135.148/election")
+    connection = MongoClient("mongodb://theLogin:thePassword!@theIp/election")
     collection = connection[DBS_NAME][COLLECTION_NAME]
     projects = collection.find(projection=FIELDS, limit=100000)
     #projects = collection.find(projection=FIELDS)
