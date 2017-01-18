@@ -18,8 +18,9 @@ FIELDS = {'school_state': True,
           'total_donations': True,
           '_id': False}
 
-PASSWORD = raw_input('Enter Mongo password !')
-
+PASSWORD = open("mongopassword.txt").read()
+print(PASSWORD)
+#PASSWORD = "lesMoulesCEstIssy!"
 
 @app.route("/")
 def index():
@@ -31,6 +32,7 @@ def donorschoose_projects():
     
     # connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
     connection = MongoClient("mongodb://teamMorpho:" + PASSWORD + "@35.164.135.148/election")
+    print()
     collection = connection[DBS_NAME][COLLECTION_NAME]
     projects = collection.find(projection=FIELDS, limit=100000)
     #projects = collection.find(projection=FIELDS)
