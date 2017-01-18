@@ -6,15 +6,13 @@ import glob
 import multiprocessing as mp
 import sys
 import os
-
+import datetime
+import argparse
 
 def get_info_state(path_txt):
 
 	state_votes = pd.read_csv(path_txt, sep=';')
 	state_votes.columns = ['time', 'state', 'value']
-
-	time = state_votes.iloc[0]['time']
-	state = state_votes.iloc[0]['state']
 
 	nb_votes = state_votes.shape[0]
 
@@ -25,57 +23,82 @@ def get_info_state(path_txt):
 
 	return agg_state.to_dict()
 
+def load_state(state, REF_TIME, aggregate=False):
 
-def load_state(state, aggregate=False):
-	
+	delay = int(state['minute']) * DELAY_LOADING
+
+	state_name = state['state_name'].replace(' ', '_')
+	time_result = state['time']
+	dict_votes = state['dict_votes']
+
+
+	while time.time() - REF_TIME < delay:
+		wait = True
+
+	date_tmp = datetime.datetime.now()
+	print('{:}: start loading results from {:}'.format(date_tmp.strftime('%H:%M:%S'), state_name))
+
 	client = MongoClient()
 	db = client.elections
 	
-	state_name = state['state_name'].replace(' ', '_')
-	time = state['time']
-	dict_votes = state['dict_votes']
-
 	nb_candidates = len(dict_votes)
 
 	if not aggregate:
 
-		votes = db.votes
-		random_votes = np.zeros(nb_votes)
+		nb_votes_total = 0
+		for kk in dict_votes:
+			nb_votes_total += dict_votes[kk]
+
+		random_votes = np.zeros(nb_votes_total, dtype=int)
 		
 		i_cand = 0
-		candidate_name = np.empty(nb_candidates)
+		candidate_name = []
 		ii = 0
 		for candidate, nb_votes in dict_votes.items():
 			random_votes[i_cand:i_cand + nb_votes] = ii
-			candidate_name[ii] = candidate
+			candidate_name.append(candidate)
 			i_cand += nb_votes
 			ii += 1
 
 		np.random.shuffle(random_votes)
+		candidate_name = np.asarray(candidate_name)
 
 		def func_dict(ivote):
-			return {"time": time, "state": state_name, "vote": candidate_name[ivote]}
+			return {"time": time_result, "state": state_name, "vote": candidate_name[ivote]}
 
-		nb_loading = 10000
+
+		nb_loading = 50000
 		i_loading = 0
+		votes = db.votes
 
-		while i_loading < nb_votes:
-			max_loading = min(nb_votes, i_loading + nb_loading)
+		while i_loading < nb_votes_total:
+
+			max_loading = int(min(nb_votes_total, i_loading + nb_loading))
+
 			insert_dict = [func_dict(ivote) for ivote in random_votes[i_loading:max_loading]]
 			status_mongo = votes.insert_many(insert_dict)
-			i_loading += nb_loading
-			print('{:s}: {:d} data inserted'.format(state, i_loading))
+			i_loading = max_loading
+
+			print('{:s}: {:d} data inserted'.format(state_name, i_loading))
 	
 	else:
 
 		votes = db.votes_agg
 		insert_dict_agg = list()
 		for candidate, nb_votes in dict_votes.items():
-			insert_dict_agg.append({"time": time, "state": IniState.loc[state_name].values[0], "vote": candidate , "nb_votes": str(nb_votes)})
+			insert_dict_agg.append({"time": time_result, "state": IniState.loc[state_name].values[0], "vote": candidate , "nb_votes": str(nb_votes)})
 
-		status_mongo = votes.insert_many(insert_dict_agg)
+		insert_status = False
+		while not insert_status:
+			
+			status_mongo = votes.insert_many(insert_dict_agg)
 
-		print('{:} loaded successfully'.format(state_name))
+			if status_mongo.acknowledged:
+				print('{:} loaded successfully'.format(state_name))
+				insert_status = True
+			else:
+				time.sleep(30)
+		
 
 	client.close()
 
@@ -94,9 +117,9 @@ if __name__ == "__main__":
 	IniState = IniState.set_index('Nom')
 	
 	#PASSWORD = open("mongopassword.txt").read()
-	AGGREGATE = True
+	AGGREGATE = False
 
-	DELAY_LOADING = 2 #(in second)
+	DELAY_LOADING = 10 #(in second)
 
 	folder_data = '/home/matthieu/ms_bigdata/nosql/projet/data'
 	state_files = glob.glob(os.path.join(folder_data, '*'))
@@ -105,12 +128,13 @@ if __name__ == "__main__":
 
 	state_dict = sorted(state_dict, key=lambda x: x['time'])
 
+	state_dict = state_dict[:4]
 	for ifile in state_dict:
-		ifile.update({'dict_votes': get_info_state(ifile['full_path'])}, 'minute': ifile['time'].split('-')[-1])
+		ifile.update({'dict_votes': get_info_state(ifile['full_path']), 'minute': ifile['time'].split('-')[-1]})
 
-	
+	REF_TIME = time.time()
 	#### Loading mongo base
-	processes = [mp.Process(target=load_state, args=(state, AGGREGATE)) for state in state_dict]
+	processes = [mp.Process(target=load_state, args=(state, REF_TIME, AGGREGATE)) for state in state_dict]
 
 	nb_process = len(processes) 
 	# Run processes
