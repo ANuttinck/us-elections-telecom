@@ -7,39 +7,46 @@ from bson.json_util import dumps
 
 app = Flask(__name__)
 
-MONGODB_HOST = 'localhost'
+MONGODB_HOST = '35.166.223.219/election'
 MONGODB_PORT = 27017
-DBS_NAME = 'donorschoose'
-COLLECTION_NAME = 'projects'
-FIELDS = {'school_state': True,
-          'resource_type': True,
-          'poverty_level': True,
-          'date_posted': True,
-          'total_donations': True,
+DBS_NAME = 'election'
+COLLECTION_NAME = 'votes'
+#FIELDS = {'school_state': True,
+ #         'resource_type': True,
+  #        'poverty_level': True,
+   #       'date_posted': True,
+	#      'total_donations': True,
+     #     '_id': False}
+
+FIELDS = {'time': True,
+          'vote': True,
+          'nb_votes': True,
+          'state': True,
           '_id': False}
 
 PASSWORD = open("mongopassword.txt").read()
+LOGIN = "teamMorpho"
 
 @app.route("/")
 def index():
     return render_template("index.html")
 
 
-@app.route("/donorschoose/projects")
+@app.route("/election/votes")
 def donorschoose_projects():
-    
-    # connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
-    connection = MongoClient("mongodb://teamMorpho:" + PASSWORD + "@35.164.135.148/election")
+
+    connection = MongoClient("mongodb://" + LOGIN + ":" + PASSWORD + "@" + MONGODB_HOST)
+    #connection = MongoClient()
     print()
     collection = connection[DBS_NAME][COLLECTION_NAME]
-    projects = collection.find(projection=FIELDS, limit=100000)
+    votes = collection.find(projection=FIELDS, limit=100000)
     #projects = collection.find(projection=FIELDS)
-    json_projects = []
-    for project in projects:
-        json_projects.append(project)
-    json_projects = json.dumps(json_projects, default=json_util.default)
+    json_votes = []
+    for vote in votes:
+        json_votes.append(vote)
+    json_votes = json.dumps(json_votes, default=json_util.default)
     connection.close()
-    return json_projects
+    return json_votes
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0',port=5000,debug=True)
