@@ -19,8 +19,6 @@ FIELDS = {'school_state': True,
           '_id': False}
 
 PASSWORD = open("mongopassword.txt").read()
-print(PASSWORD)
-#PASSWORD = "lesMoulesCEstIssy!"
 
 @app.route("/")
 def index():
