@@ -7,7 +7,7 @@ from bson.json_util import dumps
 
 app = Flask(__name__)
 
-MONGODB_HOST = '35.166.223.219/election'
+MONGODB_HOST = 'localhost'
 MONGODB_PORT = 27017
 DBS_NAME = 'election'
 COLLECTION_NAME = 'votes'
@@ -25,7 +25,6 @@ FIELDS = {'time': True,
           '_id': False}
 
 PASSWORD = open("mongopassword.txt").read()
-LOGIN = "teamMorpho"
 
 @app.route("/")
 def index():
@@ -35,8 +34,8 @@ def index():
 @app.route("/election/votes")
 def donorschoose_projects():
 
-    connection = MongoClient("mongodb://" + LOGIN + ":" + PASSWORD + "@" + MONGODB_HOST)
-    #connection = MongoClient()
+    # connection = MongoClient(MONGODB_HOST, MONGODB_PORT)
+    connection = MongoClient()
     print()
     collection = connection[DBS_NAME][COLLECTION_NAME]
     votes = collection.find(projection=FIELDS, limit=100000)

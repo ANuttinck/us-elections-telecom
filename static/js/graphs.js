@@ -1,97 +1,96 @@
 queue()
-    .defer(d3.json, "/donorschoose/projects")
+    .defer(d3.json, "/election/votes")
     .defer(d3.json, "static/geojson/us-states.json")
     .await(makeGraphs);
 
-function makeGraphs(error, projectsJson, statesJson) {
-	
+function makeGraphs(error, votesJson, statesJson) {
+
 	//Clean projectsJson data
-	var donorschooseProjects = projectsJson;
-	var dateFormat = d3.time.format("%Y-%m-%d");
-	donorschooseProjects.forEach(function(d) {
-		d["date_posted"] = dateFormat.parse(d["date_posted"]);
-		d["date_posted"].setDate(1);
-		d["total_donations"] = +d["total_donations"];
+	var electionVotes = votesJson;
+	electionVotes.forEach(function(d) {
+		//d["nb_votes"] = +d["nb_votes"];
+		d["nb_votes_total"] = +d["nb_votes_total"];
 	});
 
 	//Create a Crossfilter instance
-	var ndx = crossfilter(donorschooseProjects);
+	var ndx = crossfilter(electionVotes);
 
 	//Define Dimensions
-	var dateDim = ndx.dimension(function(d) { return d["date_posted"]; });
-	var resourceTypeDim = ndx.dimension(function(d) { return d["resource_type"]; });
-	var povertyLevelDim = ndx.dimension(function(d) { return d["poverty_level"]; });
-	var stateDim = ndx.dimension(function(d) { return d["school_state"]; });
-	var totalDonationsDim  = ndx.dimension(function(d) { return d["total_donations"]; });
+	//var voteDim = ndx.dimension(function(d) { return d["nb_votes"]; });
+	var stateDim = ndx.dimension(function(d) { return d["state"]; });
+	var totalVotesDim  = ndx.dimension(function(d) { return d["nb_votes_total"]; });
 
 
 	//Calculate metrics
-	var numProjectsByDate = dateDim.group(); 
-	var numProjectsByResourceType = resourceTypeDim.group();
-	var numProjectsByPovertyLevel = povertyLevelDim.group();
-	var totalDonationsByState = stateDim.group().reduceSum(function(d) {
-		return d["total_donations"];
+	//var numVotesByState = voteDim.group();
+	var totalVotesByState = stateDim.group().reduceSum(function(d) {
+		return d["nb_votes"];
 	});
 
 	var all = ndx.groupAll();
-	var totalDonations = ndx.groupAll().reduceSum(function(d) {return d["total_donations"];});
+  var totalVotes = ndx.groupAll().reduceSum(function(d) {return d["nb_votes"];});
 
-	var max_state = totalDonationsByState.top(1)[0].value;
+	var max_state = totalVotesByState.top(1)[0].value;
 
-	//Define values (to be used in charts)
-	var minDate = dateDim.bottom(1)[0]["date_posted"];
-	var maxDate = dateDim.top(1)[0]["date_posted"];
+  //var candidate = totalVotesByState["vote"];
 
     //Charts
-	var timeChart = dc.barChart("#time-chart");
-	var resourceTypeChart = dc.rowChart("#resource-type-row-chart");
-	var povertyLevelChart = dc.rowChart("#poverty-level-row-chart");
+	//var voteLevelChart = dc.rowChart("#vote-level-row-chart");
 	var usChart = dc.geoChoroplethChart("#us-chart");
-	var numberProjectsND = dc.numberDisplay("#number-projects-nd");
-	var totalDonationsND = dc.numberDisplay("#total-donations-nd");
+	var totalVotesND = dc.numberDisplay("#total-votes-nd");
+  var numberObsND = dc.numberDisplay("#number-obs-nd");
+  var chartCandidateScore = dc.pieChart("#candidate-score");
 
-	numberProjectsND
+
+////// PIE CHART
+  var candidateDim  = ndx.dimension(function(d) {return d["vote"];});
+  var numVoteByCandidate = candidateDim.group().reduceSum(function(d) {return d["nb_votes"];});
+  console.log(numVoteByCandidate.top(4)[3]);
+////// PIE CHART
+
+
+
+
+
+
+
+
+
+	totalVotesND
 		.formatNumber(d3.format("d"))
 		.valueAccessor(function(d){return d; })
-		.group(all);
-
-	totalDonationsND
-		.formatNumber(d3.format("d"))
-		.valueAccessor(function(d){return d; })
-		.group(totalDonations)
+    .group(totalVotes)
 		.formatNumber(d3.format(".3s"));
 
-	timeChart
-		.width(600)
-		.height(160)
-		.margins({top: 10, right: 50, bottom: 30, left: 50})
-		.dimension(dateDim)
-		.group(numProjectsByDate)
-		.transitionDuration(500)
-		.x(d3.time.scale().domain([minDate, maxDate]))
-		.elasticY(true)
-		.xAxisLabel("Year")
-		.yAxis().ticks(4);
+  numberObsND
+  	.formatNumber(d3.format("d"))
+  	.valueAccessor(function(d){return d; })
+  	.group(all);
 
-	resourceTypeChart
-        .width(300)
-        .height(250)
-        .dimension(resourceTypeDim)
-        .group(numProjectsByResourceType)
-        .xAxis().ticks(4);
+	//voteLevelChart
+		//.width(300)
+		//.height(250)
+      //  .dimension(voteDim)
+      //  .group(numVotesByState)
+      //  .xAxis().ticks(4);
 
-	povertyLevelChart
-		.width(300)
-		.height(250)
-        .dimension(povertyLevelDim)
-        .group(numProjectsByPovertyLevel)
-        .xAxis().ticks(4);
-
+  chartCandidateScore
+    .width(468)
+    .height(280)
+    .slicesCap(4)
+    //.innerRadius(100)
+    .dimension(candidateDim)
+    .group(numVoteByCandidate)
+    .legend(dc.legend())
+    // workaround for #703: not enough data is accessible through .label() to display percentages
+    //.on('pretransition', function(chart) {
+    //    chart.selectAll('text.pie-slice').text(function(d) {
+    //        return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%'})});
 
 	usChart.width(1000)
 		.height(330)
 		.dimension(stateDim)
-		.group(totalDonationsByState)
+		.group(totalVotesByState)
 		.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
 		.colorDomain([0, max_state])
 		.overlayGeoJson(statesJson["features"], "state", function (d) {
@@ -103,7 +102,7 @@ function makeGraphs(error, projectsJson, statesJson) {
 		.title(function (p) {
 			return "State: " + p["key"]
 					+ "\n"
-					+ "Total Donations: " + Math.round(p["value"]) + " $";
+					+ "Total Votes: " + Math.round(p["value"]) + " votes";
 		})
 
     dc.renderAll();
