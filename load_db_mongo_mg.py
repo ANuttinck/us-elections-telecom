@@ -94,7 +94,7 @@ def compute_aggregations(dict_state):
 def load_state(state, REF_TIME, aggregate=False):
 
 	delay = state['minute'] * DELAY_LOADING
-	
+	state_name = state['state_name']
 	time_result = state['time']
 	dict_votes = state['dict_votes']
 
