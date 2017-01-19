@@ -1,3 +1,4 @@
+#!/usr/bin/python3
 import numpy as np
 import time
 import pandas as pd
@@ -25,7 +26,7 @@ def get_info_state(path_txt):
 
 def load_state(state, REF_TIME, aggregate=False):
 
-	delay = int(state['minute']) * DELAY_LOADING
+	delay = state['minute'] * DELAY_LOADING
 
 	state_name = state['state_name'].replace(' ', '_')
 	time_result = state['time']
@@ -33,6 +34,7 @@ def load_state(state, REF_TIME, aggregate=False):
 
 
 	while time.time() - REF_TIME < delay:
+		time.sleep(1)
 		wait = True
 
 	date_tmp = datetime.datetime.now()
@@ -112,27 +114,34 @@ def process_filename(x):
 
 
 if __name__ == "__main__":
+
+	### arguments parser
+	parser = argparse.ArgumentParser()
+	parser.add_argument("-g", "--aggregate", type=bool, help="load aggregated results", required=True)
+	parser.add_argument("-l", "--limits", type=int, nargs='+', help="begin state and end state for loading", required=True)
+	args = parser.parse_args()
+
+	begin_state, end_state = args.limits
+	AGGREGATE = args.aggregate
 	
 	IniState = pd.read_csv("mapping_initial.csv", sep=',', converters = {'Nom': lambda x: x.strip().replace(' ', '_'), 'Initial': lambda x: x.strip()})
 	IniState = IniState.set_index('Nom')
 	
 	#PASSWORD = open("mongopassword.txt").read()
-	AGGREGATE = False
-
+	
 	DELAY_LOADING = 10 #(in second)
 
 	folder_data = '/home/matthieu/ms_bigdata/nosql/projet/data'
 	state_files = glob.glob(os.path.join(folder_data, '*'))
 
 	state_dict = list(map(process_filename, state_files))
-
 	state_dict = sorted(state_dict, key=lambda x: x['time'])
 
-	state_dict = state_dict[:4]
+	state_dict = state_dict[begin_state:end_state]
 	for ifile in state_dict:
-		ifile.update({'dict_votes': get_info_state(ifile['full_path']), 'minute': ifile['time'].split('-')[-1]})
+		ifile.update({'dict_votes': get_info_state(ifile['full_path']), 'minute': int(ifile['time'].split('-')[-1])})
 
-	REF_TIME = time.time()
+	REF_TIME = time.time() - DELAY_LOADING * state_dict[begin_state]['minute']
 	#### Loading mongo base
 	processes = [mp.Process(target=load_state, args=(state, REF_TIME, AGGREGATE)) for state in state_dict]
 
