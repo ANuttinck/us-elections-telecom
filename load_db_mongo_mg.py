@@ -94,8 +94,7 @@ def compute_aggregations(dict_state):
 def load_state(state, REF_TIME, aggregate=False):
 
 	delay = state['minute'] * DELAY_LOADING
-
-	state_name = state['state_name'].replace(' ', '_')
+	
 	time_result = state['time']
 	dict_votes = state['dict_votes']
 
@@ -105,7 +104,7 @@ def load_state(state, REF_TIME, aggregate=False):
 		wait = True
 
 	date_tmp = datetime.datetime.now()
-	print('{:}: start loading results from {:}'.format(date_tmp.strftime('%H:%M:%S'), state_name))
+	print('{:} {:} start loading'.format(date_tmp.strftime('%H:%M:%S'), state_name.title()))
 
 	client = MongoClient()
 	db = client.elections
@@ -154,7 +153,8 @@ def load_state(state, REF_TIME, aggregate=False):
 			else:
 				print('PROBLEM LOADING: {:} data'.format(state_name))
 
-		print('{:s}: loading completed, {:d} documents inserted'.format(state_name.title(), i_loading))
+		date_tmp = datetime.datetime.now()
+		print('{:} {:s} loading completed, {:d} documents inserted'.format(date_tmp.strftime('%H:%M:%S'), state_name.title(), i_loading))
 
 	else:
 
@@ -180,12 +180,13 @@ def load_state(state, REF_TIME, aggregate=False):
 def process_filename(x):
 	tmp = os.path.basename(x)
 	tmp = tmp[:-4].split('_')
-	return {'full_path':x, 'time': tmp[0], 'state_name':' '.join(tmp[1:])} 
+	return {'full_path':x, 'time': tmp[0], 'state_name':'_'.join(tmp[1:])} 
 
 
 
 if __name__ == "__main__":
 
+	#"mongodb://teamMorpho:" + PASSWORD + "@35.164.135.148/election"
 
 	### arguments parser
 	parser = argparse.ArgumentParser()
