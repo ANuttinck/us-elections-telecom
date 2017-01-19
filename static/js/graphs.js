@@ -1,3 +1,8 @@
+setInterval(function(){ queue()
+    .defer(d3.json, "/donorschoose/projects")
+    .defer(d3.json, "static/geojson/us-states.json")
+    .await(makeGraphs/*dc.redrawAll()*/) }, 60000);
+
 queue()
     .defer(d3.json, "/election/votes")
     .defer(d3.json, "static/geojson/us-states.json")
