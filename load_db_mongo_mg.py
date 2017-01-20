@@ -9,6 +9,8 @@ import sys
 import os
 import datetime
 import argparse
+import ipdb
+import copy
 
 
 def get_info_state(path_txt):
@@ -23,12 +25,37 @@ def get_info_state(path_txt):
 
 	state_votes = None
 
-	return agg_state.to_dict()
+	nb_votes_total = np.sum(agg_state.values)
+	agg_state = agg_state.to_dict()
+
+	return agg_state, nb_votes_total
+
+
+
+def split_votes_state(state_dict, nb_split):
+	
+	list_state = list()
+	for ii in range(nb_split):
+		list_state.append(copy.deepcopy(state_dict))
+
+
+	for ii in range(nb_split):
+		for key, value in state_dict['dict_votes'].items():
+			
+			if ii == nb_split - 1:
+				list_state[ii]['dict_votes'][key] = value - (nb_split - 1) * int(value / nb_split)
+			
+			else:
+				#ipdb.set_trace()
+				list_state[ii]['dict_votes'][key] = int(value / nb_split)
+
+		list_state[ii]['split'] = str(ii + 1) + '/' + str(nb_split)
+		 
+	return list_state
 
 
 
 def insert_many_into_base(db_collection, insert_dict):
-
 	max_tries = 20
 	i_try = 0
 
@@ -79,12 +106,6 @@ def compute_aggregations(dict_state):
 		if aggregations_results == []:
 			continue
 
-		'''
-		if first_iter:
-			insert_many_into_base(db['agg_results'], aggregations_results)
-			first_iter = False
-		else:
-		'''	
 		print('----INSERT AGGREGATED RESULTS----')
 		for up_dict in aggregations_results:
 			update_one_aggregation(db['agg_results'], up_dict)
@@ -98,13 +119,14 @@ def load_state(state, REF_TIME, aggregate=False):
 	time_result = state['time']
 	dict_votes = state['dict_votes']
 
+	split_num = '' if not 'split' in state.keys() else ' ' + state['split'] 
 
 	while time.time() - REF_TIME < delay:
 		time.sleep(1)
 		wait = True
 
 	date_tmp = datetime.datetime.now()
-	print('{:} {:} start loading'.format(date_tmp.strftime('%H:%M:%S'), state_name.title()))
+	print('{:} {:} start loading'.format(date_tmp.strftime('%H:%M:%S'), state_name.title() + split_num))
 
 	client = MongoClient()
 	db = client.elections
@@ -149,12 +171,12 @@ def load_state(state, REF_TIME, aggregate=False):
 			status = insert_many_into_base(votes, insert_dict)
 			if status == 0:
 				#print('{:s}: {:d} data inserted'.format(state_name, i_loading))
-				ok = True
+				pass
 			else:
 				print('PROBLEM LOADING: {:} data'.format(state_name))
 
 		date_tmp = datetime.datetime.now()
-		print('{:} {:s} loading completed, {:d} documents inserted'.format(date_tmp.strftime('%H:%M:%S'), state_name.title(), i_loading))
+		print('{:} {:s} loading completed, {:d} documents inserted'.format(date_tmp.strftime('%H:%M:%S'), state_name.title() + split_num, i_loading))
 
 	else:
 
@@ -168,7 +190,7 @@ def load_state(state, REF_TIME, aggregate=False):
 		status = insert_many_into_base(votes, insert_dict_agg)
 		
 		if status == 0:
-			print('{:}: results loaded successfully'.format(state_name))
+			print('{:}: results loaded successfully'.format(state_name + split_num))
 		else:
 			print('PROBLEM LOADING: {:} data'.format(state_name))
 		
@@ -215,12 +237,33 @@ if __name__ == "__main__":
 
 	print('Raw files analysis...')
 	for ifile in state_dict:
-		ifile.update({'dict_votes': get_info_state(ifile['full_path']), 'minute': int(ifile['time'].split('-')[-1])})
 
-	REF_TIME = time.time() - DELAY_LOADING * state_dict[begin_state]['minute']
-	
+		dict_votes, nb_votes_total = get_info_state(ifile['full_path'])
+		ifile.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(ifile['time'].split('-')[-1])})
+
+	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
+
+	if not AGGREGATE:
+		##### split big state
+		state_dict = sorted(state_dict, key=lambda x: x['nb_votes_total'])
+		list_nb_votes = np.asarray(list(map(lambda x: x['nb_votes_total'], state_dict)))
+		
+		median_votes = np.median(list_nb_votes)
+		ind_sup = np.argmax(list_nb_votes > 1.6 * np.median(list_nb_votes)) 
+		nb_states = len(state_dict)
+
+		state_dict_save = state_dict.copy()
+
+		splited_states = []
+		for ind in range(ind_sup, nb_states):
+			splited_states.extend(split_votes_state(state_dict[ind], int(np.floor(list_nb_votes[ind] / median_votes)))) 
+		
+		state_dict = state_dict[:ind_sup]
+		state_dict.extend(splited_states)
+
 	#### Loading mongo base
 	processes = [mp.Process(target=load_state, args=(state, REF_TIME, AGGREGATE)) for state in state_dict]
+
 
 	if not AGGREGATE: 
 		## add aggregation
