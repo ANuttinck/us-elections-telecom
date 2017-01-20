@@ -8,6 +8,45 @@ queue()
     .defer(d3.json, "static/geojson/us-states.json")
     .await(makeGraphs);
 
+function reduceInitial() {
+    return {
+        nb_votes : 0,
+        vote : ""
+    };
+};
+
+function reduceAdd(p, v) {
+    if(parseInt(p["nb_votes"]) < parseInt(v["nb_votes"])){
+        p["nb_votes"] = v["nb_votes"]
+        p["vote"] = v["vote"]
+    }
+    return p;
+ };
+
+
+function reduceRemove(p, v) {
+   return p;
+};
+
+
+function reduceInitialCandidate() {
+    return vote="", nb_votes=0;
+};
+
+function reduceAddCandidate(vote, nb_votes, vote2, nb_votes2) {
+    if(parseInt(nb_votes) < parseInt(nb_votes2)){
+        nb_votes = nb_votes2
+        vote = vote2
+    }
+    return vote,nb_votes;
+ };
+
+ function reduceRemoveCandidate(vote, nb_votes, vote2, nb_votes2) {
+    return vote, nb_votes;
+ };
+
+
+
 function makeGraphs(error, votesJson, statesJson) {
 
 	//Clean projectsJson data
@@ -24,13 +63,43 @@ function makeGraphs(error, votesJson, statesJson) {
 	//var voteDim = ndx.dimension(function(d) { return d["nb_votes"]; });
 	var stateDim = ndx.dimension(function(d) { return d["state"]; });
 	var totalVotesDim  = ndx.dimension(function(d) { return d["nb_votes_total"]; });
-
+  var candidateDim = ndx.dimension(function(d) { return d["vote"]; });
 
 	//Calculate metrics
+
 	//var numVotesByState = voteDim.group();
-	var totalVotesByState = stateDim.group().reduceSum(function(d) {
-		return d["nb_votes"];
-	});
+  var totalVotesByState = stateDim.group().reduceSum(function(d) {
+          return d["nb_votes"];
+  });
+  console.log(totalVotesByState.top(15));
+  // Number of votes and name of the winner in a state
+  var candidateAndVotesByState = stateDim.group().reduce(reduceAdd, reduceRemove, reduceInitial)
+  //console.log(candidateAndVotesByState.all()[0]);
+  console.log(candidateAndVotesByState.top(15));
+
+  var candidateByState = candidateAndVotesByState;
+
+  // Name of the winner by state
+  // Doesn't work, we need to have the same form as candidateByState
+  // totalVotesByState => key : "CA", value : "Clinton"
+  // NOT => "CA" : "Clinton"
+  // Or change the dc.js source
+
+
+
+  // work in progress ....
+  //candidateByState = [];
+  //for (i = 0; i < candidateAndVotesByState.all().length; i++) {
+  //  var tkl = candidateAndVotesByState.all()[i]["keyz"];
+  //  var u = candidateAndVotesByState.all()[i]["value"]["vote"];
+  //  candidateByState.push({
+      //candidateAndVotesByState.all()[i]["key"] : candidateAndVotesByState.all()[i]["value"]["vote"]
+  //  })
+  //};
+
+
+
+
 
 	var all = ndx.groupAll();
   var totalVotes = ndx.groupAll().reduceSum(function(d) {return d["nb_votes"];});
@@ -50,10 +119,8 @@ function makeGraphs(error, votesJson, statesJson) {
 ////// PIE CHART
   var candidateDim  = ndx.dimension(function(d) {return d["vote"];});
   var numVoteByCandidate = candidateDim.group().reduceSum(function(d) {return d["nb_votes"];});
-  console.log(numVoteByCandidate.top(4)[3]);
+  //console.log(numVoteByCandidate.top(4)[3]);
 ////// PIE CHART
-
-
 
 
 
@@ -95,9 +162,12 @@ function makeGraphs(error, votesJson, statesJson) {
 	usChart.width(1000)
 		.height(330)
 		.dimension(stateDim)
-		.group(totalVotesByState)
+		//.group(candidateByState)
+    .group(totalVotesByState)
 		.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
+    //.colors(["#E2F2FF", "#0061B5"])
 		.colorDomain([0, max_state])
+    //.colorDomain(["Trump", "Clinton"])
 		.overlayGeoJson(statesJson["features"], "state", function (d) {
 			return d.properties.name;
 		})
@@ -107,7 +177,7 @@ function makeGraphs(error, votesJson, statesJson) {
 		.title(function (p) {
 			return "State: " + p["key"]
 					+ "\n"
-					+ "Total Votes: " + Math.round(p["value"]) + " votes";
+          + "Winner: " + p["value"]
 		})
 
     dc.renderAll();
