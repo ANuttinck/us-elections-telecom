@@ -154,6 +154,10 @@ function makeGraphs(error, votesJson, statesJson) {
     //.on('pretransition', function(chart) {
     //    chart.selectAll('text.pie-slice').text(function(d) {
     //        return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%'})});
+var colorScale = d3.scale.ordinal()
+         .domain(["Blanc", "Clinton", "Johnson", "Trump", "Autre", "Stein", "McMullin", "Castle"])
+         .range(["#ffffff", "#0000ff", "#07a1e8", "#c00000", "#ffffff", "#70ad47", "#878485", "9bc002"]);
+
 
 	usChart.width(1000)
 		.height(330)
@@ -161,8 +165,8 @@ function makeGraphs(error, votesJson, statesJson) {
 		.group(candidateByState)
     //.group(totalVotesByState)
 		//.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
-    .colors(["#E2F2FF", "#0061B5"])
-    .colorDomain(["Trump", "Clinton"])
+    .colors(["#ffffff", "#0000ff", "#07a1e8", "#c00000", "#ffffff", "#70ad47", "#878485", "9bc002"])
+    .colorDomain(["Blanc", "Clinton", "Johnson", "Trump", "Autre", "Stein", "McMullin", "Castle"])
 		.overlayGeoJson(statesJson["features"], "state", function (d) {
 			return d.properties.name;
 		})
