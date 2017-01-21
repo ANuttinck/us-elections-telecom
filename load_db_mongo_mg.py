@@ -262,7 +262,7 @@ if __name__ == "__main__":
 	
 	#PASSWORD = open("mongopassword.txt").read()
 
-	folder_data = '/home/matthieu/ms_bigdata/nosql/projet/data'
+	folder_data = '../data'
 	state_files = glob.glob(os.path.join(folder_data, '*'))
 
 	state_dict = list(map(process_filename, state_files))
