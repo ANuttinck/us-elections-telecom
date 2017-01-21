@@ -72,31 +72,27 @@ function makeGraphs(error, votesJson, statesJson) {
           return d["nb_votes"];
   });
   console.log(totalVotesByState.top(15));
+
+  //console.log(totalVotesByState.keyAccessor());
   // Number of votes and name of the winner in a state
   var candidateAndVotesByState = stateDim.group().reduce(reduceAdd, reduceRemove, reduceInitial)
-  //console.log(candidateAndVotesByState.all()[0]);
-  console.log(candidateAndVotesByState.top(15));
-
-  var candidateByState = candidateAndVotesByState;
-
-  // Name of the winner by state
-  // Doesn't work, we need to have the same form as candidateByState
-  // totalVotesByState => key : "CA", value : "Clinton"
-  // NOT => "CA" : "Clinton"
-  // Or change the dc.js source
+  //console.log(candidateAndVotesByState.top(15));
 
 
 
-  // work in progress ....
-  //candidateByState = [];
-  //for (i = 0; i < candidateAndVotesByState.all().length; i++) {
-  //  var tkl = candidateAndVotesByState.all()[i]["keyz"];
-  //  var u = candidateAndVotesByState.all()[i]["value"]["vote"];
-  //  candidateByState.push({
-      //candidateAndVotesByState.all()[i]["key"] : candidateAndVotesByState.all()[i]["value"]["vote"]
-  //  })
-  //};
 
+  // Compute an Array with state as key and winner as value
+  var candidateByState = [];
+  for (i = 0; i < candidateAndVotesByState.all().length; i++) {
+    var tkl = candidateAndVotesByState.all()[i]["keyz"];
+    var u = candidateAndVotesByState.all()[i]["value"]["vote"];
+    candidateByState.push({
+      key : candidateAndVotesByState.all()[i]["key"],
+      value : candidateAndVotesByState.all()[i]["value"]["vote"]
+    })
+  };
+
+  console.log(candidateByState)
 
 
 
@@ -162,12 +158,11 @@ function makeGraphs(error, votesJson, statesJson) {
 	usChart.width(1000)
 		.height(330)
 		.dimension(stateDim)
-		//.group(candidateByState)
-    .group(totalVotesByState)
-		.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
-    //.colors(["#E2F2FF", "#0061B5"])
-		.colorDomain([0, max_state])
-    //.colorDomain(["Trump", "Clinton"])
+		.group(candidateByState)
+    //.group(totalVotesByState)
+		//.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
+    .colors(["#E2F2FF", "#0061B5"])
+    .colorDomain(["Trump", "Clinton"])
 		.overlayGeoJson(statesJson["features"], "state", function (d) {
 			return d.properties.name;
 		})

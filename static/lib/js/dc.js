@@ -2375,7 +2375,12 @@ dc.colorChart = function(_chart) {
         var maxValue = domain[1];
 
         if (isNaN(value)) value = 0;
-        if (!dc.utils.isNumber(maxValue)) return _colors(value);
+
+        ///// HERE ////
+        if (!dc.utils.isNumber(maxValue)){
+          //return _colors(value);
+          return _colors([minValue,maxValue]);
+        }
 
         var colorsLength = _chart.colors().range().length;
         var denominator = (maxValue - minValue) / colorsLength;
@@ -4469,7 +4474,8 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
     function generateLayeredData() {
         var data = {};
-        var groupAll = _chart.group().all();
+        //console.log(_chart.group());
+        var groupAll = _chart.group();//.all();
         for (var i = 0; i < groupAll.length; ++i) {
             data[_chart.keyAccessor()(groupAll[i])] = _chart.valueAccessor()(groupAll[i]);
         }
