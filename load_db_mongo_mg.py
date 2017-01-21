@@ -14,9 +14,21 @@ import copy
 import ctypes
 
 
+
+def init_mongo_client(remote, connection_string):
+
+	if REMOTE:
+		client = MongoClient(connection_string)
+	else:
+		client = MongoClient()
+
+	return client
+
+
 def date_print(s):
 	date_tmp = datetime.datetime.now()
 	print(date_tmp.strftime('%H:%M:%S') + ' ' + s)
+
 
 
 def get_info_state(path_txt):
@@ -35,6 +47,7 @@ def get_info_state(path_txt):
 	agg_state = agg_state.to_dict()
 
 	return agg_state, nb_votes_total
+
 
 
 def split_votes_state(state_dict, nb_split):
@@ -59,8 +72,9 @@ def split_votes_state(state_dict, nb_split):
 	return list_state
 
 
+
 def insert_many_into_base(db_collection, insert_dict):
-	max_tries = 20
+	max_tries = 3
 	i_try = 0
 
 	while i_try < max_tries:
@@ -69,8 +83,9 @@ def insert_many_into_base(db_collection, insert_dict):
 		if status_mongo.acknowledged:
 			return 0
 		else:
-			time.sleep(30)
+			time.sleep(10)
 	return 1
+
 
 
 def update_one_aggregation(db_collection, update_dict):
@@ -88,12 +103,10 @@ def update_one_aggregation(db_collection, update_dict):
 	return 1
 
 
+
 def compute_aggregations(dict_state):
 
-	if REMOTE:
-		client = MongoClient(client_connection)
-	else:
-		client = MongoClient()
+	client = init_mongo_client(REMOTE, connection_string)
 
 	db = client.elections
 
@@ -122,6 +135,8 @@ def compute_aggregations(dict_state):
 		for up_dict in aggregations_results:
 			update_one_aggregation(db['agg_results'], up_dict)
 
+	client.close()
+
 
 
 def load_state(state, REF_TIME, process_id, aggregate=False):
@@ -139,13 +154,11 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 
 	date_print('{:} start loading'.format(state_name.title() + split_num))
 
-	if REMOTE:
-		client = MongoClient(client_connection)
-	else:
-		client = MongoClient()
 
+	client = init_mongo_client(REMOTE, connection_string)
 	db = client.elections
 	
+
 	nb_candidates = len(dict_votes)
 
 	if not aggregate:
@@ -186,11 +199,17 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 			
 			########### insert 
 			status = insert_many_into_base(votes, insert_dict)
+
 			if status == 0:
 				#print('{:s}: {:d} data inserted'.format(state_name, i_loading))
 				pass
 			else:
-				print('PROBLEM LOADING: {:} data'.format(state_name))
+				date_print('PROBLEM LOADING: {:} data || RETRY'.format(state_name))
+				client.close()
+				client = init_mongo_client(REMOTE, connection_string)
+				db = client.elections
+				votes = db['res_' + state_name]
+				status = insert_many_into_base(votes, insert_dict)
 
 			PROGRESS[process_id] = float(i_loading / nb_votes_total)
 
@@ -215,9 +234,13 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 		if status == 0:
 			date_print('{:} results loaded successfully'.format(state_name + split_num))
 		else:
-			date_print('PROBLEM LOADING {:} data'.format(state_name))
+			date_print('PROBLEM LOADING {:} data || RETRY'.format(state_name))
+			client.close()
+			client = init_mongo_client(REMOTE, connection_string)
+			db = client.elections
+			votes = db['res_' + state_name]
+			status = insert_many_into_base(votes, insert_dict)
 		
-
 	client.close()
 
 
@@ -240,15 +263,15 @@ if __name__ == "__main__":
 	   'options': "replicaSet=rs0"
 	}
 	
-	client_connection = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
+	connection_string = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
 
-	client_connection = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
+	connection_string = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
 
 	### arguments parser
 	parser = argparse.ArgumentParser()
 	parser.add_argument("-g", "--aggregate", type=int, help="load aggregated results", required=True)
 	parser.add_argument("-l", "--limits", type=int, nargs='+', help="begin state and end state for loading", required=True)
-	parser.add_argument("-d", "--delay", type=int, help="loading delay", required=True)
+	parser.add_argument("-d", "--delay", type=int, help="loading delay", default=1, required=False)
 	parser.add_argument("-r", "--remote", action="store_true", help="is loading remote ?")
 	parser.add_argument("-i", "--ip", type=str, help="loading delay", required=False)
 	args = parser.parse_args()
