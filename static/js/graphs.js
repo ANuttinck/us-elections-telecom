@@ -120,6 +120,22 @@ function makeGraphs(error, votesJson, statesJson) {
 
 
 
+    chartCandidateScore
+        .width(468)
+        .height(280)
+        .slicesCap(4)
+        //.innerRadius(100)
+        .dimension(candidateDim)
+        .group(numVoteByCandidate)
+        .colors(d3.scale.ordinal().domain(["Trump", "Clinton", "Blanc", "Others", "Johnson"]).range(["#E2F2FF", "#6baed6", "#3182bd", "#e6550d", "#9ecae1"]))
+        .colorDomain(["Trump", "Clinton", "Blanc", "Others"])
+        .colorAccessor(function (d) {
+            return d.data.key
+        })
+        .colorCalculator(function (d) {
+            return d ? chartCandidateScore.colors()(d) : '#ccc';
+        })
+        .legend(dc.legend());
 
 
 
