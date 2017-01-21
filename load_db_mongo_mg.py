@@ -229,7 +229,7 @@ def process_filename(x):
 if __name__ == "__main__":
 
 	PASSWORD = open('mongopassword.txt', 'r', encoding='utf-8').read()
-	PASSWORD = 'lesMoulesCEstIssy'
+	#PASSWORD = 'lesMoulesCEstIssy'
 	IP_MASTER = '35.166.223.219:27017'
 	client_connection = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
 
@@ -273,7 +273,7 @@ if __name__ == "__main__":
 
 	if REMOTE:
 		print('----LOADING THE REMOTE DATABASE----')
-		
+
 	print('Raw files analysis...')
 	for ifile in state_dict:
 
