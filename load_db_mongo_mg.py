@@ -239,7 +239,7 @@ if __name__ == "__main__":
 	   'password': PASSWORD,
 	   'options': "replicaSet=rs0"
 	}
-	#client_connection = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
+	client_connection = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
 
 
 	### arguments parser
