@@ -212,7 +212,8 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 		status = insert_many_into_base(votes, insert_dict_agg)
 		
 		if status == 0:
-			print('{:}: results loaded successfully'.format(state_name + split_num))
+			date_tmp = datetime.datetime.now()
+			print('{:} {:} results loaded successfully'.format(date_tmp.strftime('%H:%M:%S'), state_name + split_num))
 		else:
 			print('PROBLEM LOADING: {:} data'.format(state_name))
 		
@@ -230,8 +231,7 @@ if __name__ == "__main__":
 
 	PASSWORD = open('mongopassword.txt', 'r', encoding='utf-8').read().strip()
 	IP_MASTER = '35.166.223.219:27017'
-	client_connection = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
-
+	
 	settings = {
 	   'host': "35.166.223.219:27017,52.26.206.44:27017,50.112.193.13:27017",
 	   'database': "election",
@@ -239,8 +239,10 @@ if __name__ == "__main__":
 	   'password': PASSWORD,
 	   'options': "replicaSet=rs0"
 	}
-	client_connection = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
+	
+	client_connection = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
 
+	client_connection = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
 
 	### arguments parser
 	parser = argparse.ArgumentParser()
