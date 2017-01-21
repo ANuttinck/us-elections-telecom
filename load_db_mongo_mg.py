@@ -271,6 +271,9 @@ if __name__ == "__main__":
 	# select states
 	state_dict = state_dict[begin_state:end_state]
 
+	if REMOTE:
+		print('----LOADING THE REMOTE DATABASE----')
+		
 	print('Raw files analysis...')
 	for ifile in state_dict:
 
