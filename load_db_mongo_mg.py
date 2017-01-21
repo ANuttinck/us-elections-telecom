@@ -234,7 +234,7 @@ if __name__ == "__main__":
 	client_connection = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
 
 	settings = {
-	   'host': "50.112.193.13:27017,52.24.56.171:27017,52.10.213.215:27017",
+	   'host': "35.166.223.219:27017,52.26.206.44:27017,50.112.193.13:27017",
 	   'database': "election",
 	   'username': "teamMorpho",
 	   'password': PASSWORD,
