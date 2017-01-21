@@ -155,25 +155,33 @@ function makeGraphs(error, votesJson, statesJson) {
     //    chart.selectAll('text.pie-slice').text(function(d) {
     //        return d.data.key + ' ' + dc.utils.printSingleValue((d.endAngle - d.startAngle) / (2*Math.PI) * 100) + '%'})});
 
-	usChart.width(1000)
-		.height(330)
-		.dimension(stateDim)
-		.group(candidateByState)
-    //.group(totalVotesByState)
-		//.colors(["#E2F2FF", "#C4E4FF", "#9ED2FF", "#81C5FF", "#6BBAFF", "#51AEFF", "#36A2FF", "#1E96FF", "#0089FF", "#0061B5"])
-    .colors(["#E2F2FF", "#0061B5"])
-    .colorDomain(["Trump", "Clinton"])
-		.overlayGeoJson(statesJson["features"], "state", function (d) {
-			return d.properties.name;
-		})
-		.projection(d3.geo.albersUsa()
-    				.scale(600)
-    				.translate([340, 150]))
-		.title(function (p) {
-			return "State: " + p["key"]
-					+ "\n"
-          + "Winner: " + p["value"]
-		})
+    var colorScale = d3.scale.ordinal().domain(["Trump", "Clinton"])
+        .range(["#E2F2FF", "#0061B5"]);
+
+
+    usChart.width(1000)
+        .height(330)
+        .dimension(stateDim)
+        .group(candidateByState)
+        .colors(d3.scale.ordinal().range(["#E2F2FF", "#6baed6"]))
+        .colorDomain(["Trump", "Clinton"])
+        .colorAccessor(function (d) {
+            return d
+        })
+        .colorCalculator(function (d) {
+            return d ? usChart.colors()(d) : '#ccc';
+        })
+        .overlayGeoJson(statesJson["features"], "state", function (d) {
+            return d.properties.name;
+        })
+        .projection(d3.geo.albersUsa()
+            .scale(600)
+            .translate([340, 150]))
+        .title(function (p) {
+            return "State: " + p["key"]
+                + "\n"
+                + "Winner: " + p["value"]
+        });
 
     dc.renderAll();
 
