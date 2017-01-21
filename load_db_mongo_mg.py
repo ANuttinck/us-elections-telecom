@@ -13,6 +13,12 @@ import ipdb
 import copy
 import ctypes
 
+
+def date_print(s):
+	date_tmp = datetime.datetime.now()
+	print(date_tmp.strftime('%H:%M:%S') + ' ' + s)
+
+
 def get_info_state(path_txt):
 
 	state_votes = pd.read_csv(path_txt, sep=';')
@@ -82,7 +88,6 @@ def update_one_aggregation(db_collection, update_dict):
 	return 1
 
 
-
 def compute_aggregations(dict_state):
 
 	if REMOTE:
@@ -104,7 +109,7 @@ def compute_aggregations(dict_state):
 		if np.sum(np.logical_not(PROGRESS == 1.0)) == 0:
 			not_finished = False
 
-		print('----AGGREGATION----')
+		date_print('----AGGREGATION----')
 		for i_state in dict_state:
 			time.sleep(1)
 			state_name = i_state['state_name']
@@ -113,7 +118,7 @@ def compute_aggregations(dict_state):
 		if aggregations_results == []:
 			continue
 
-		print('----INSERT AGGREGATED RESULTS----')
+		date_print('----INSERT AGGREGATED RESULTS----')
 		for up_dict in aggregations_results:
 			update_one_aggregation(db['agg_results'], up_dict)
 
@@ -132,9 +137,7 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 		time.sleep(1)
 		wait = True
 
-	date_tmp = datetime.datetime.now()
-	print('{:} {:} start loading'.format(date_tmp.strftime('%H:%M:%S'), state_name.title() + split_num))
-
+	date_print('{:} start loading'.format(state_name.title() + split_num))
 
 	if REMOTE:
 		client = MongoClient(client_connection)
@@ -192,13 +195,11 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 			PROGRESS[process_id] = float(i_loading / nb_votes_total)
 
 			if np.mod(ii, nb_iter_10_percent) == 0:
-				print('{:}: {:.0f}% loading completed'.format(state_name.title() + split_num, PROGRESS[process_id] * 100))
+				date_print('{:} {:.0f}% loading completed'.format(state_name.title() + split_num, PROGRESS[process_id] * 100))
 
 			ii += 1
 
-
-		date_tmp = datetime.datetime.now()
-		print('{:} {:s} loading completed, {:d} documents inserted'.format(date_tmp.strftime('%H:%M:%S'), state_name.title() + split_num, i_loading))
+		date_print('{:s} loading completed, {:d} documents inserted'.format(state_name.title() + split_num, i_loading))
 
 	else:
 
@@ -212,10 +213,9 @@ def load_state(state, REF_TIME, process_id, aggregate=False):
 		status = insert_many_into_base(votes, insert_dict_agg)
 		
 		if status == 0:
-			date_tmp = datetime.datetime.now()
-			print('{:} {:} results loaded successfully'.format(date_tmp.strftime('%H:%M:%S'), state_name + split_num))
+			date_print('{:} results loaded successfully'.format(state_name + split_num))
 		else:
-			print('PROBLEM LOADING: {:} data'.format(state_name))
+			date_print('PROBLEM LOADING {:} data'.format(state_name))
 		
 
 	client.close()
