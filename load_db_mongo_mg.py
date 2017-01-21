@@ -84,13 +84,14 @@ def insert_many_into_base(db_collection, insert_dict):
 			return 0
 		else:
 			time.sleep(10)
+			date_print('----CONNECTION PROBLEM WITH THE DATABASE----')
 	return 1
 
 
 
 def update_one_aggregation(db_collection, update_dict):
 
-	max_tries = 20
+	max_tries = 3
 	i_try = 0
 
 	while i_try < max_tries:
@@ -99,7 +100,8 @@ def update_one_aggregation(db_collection, update_dict):
 		if status_mongo.acknowledged:
 			return 0
 		else:
-			time.sleep(30)
+			time.sleep(10)
+			date_print('----CONNECTION PROBLEM WITH THE DATABASE----')
 	return 1
 
 
@@ -107,7 +109,6 @@ def update_one_aggregation(db_collection, update_dict):
 def compute_aggregations(dict_state):
 
 	client = init_mongo_client(REMOTE, connection_string)
-
 	db = client.elections
 
 	pipeline = [{"$group": {"_id": "$vote", "nb_votes": {"$sum": 1}}}]
@@ -133,7 +134,17 @@ def compute_aggregations(dict_state):
 
 		date_print('----INSERT AGGREGATED RESULTS----')
 		for up_dict in aggregations_results:
-			update_one_aggregation(db['agg_results'], up_dict)
+
+			status = update_one_aggregation(db['agg_results'], up_dict)
+			if status == 0:
+				pass
+			else:
+				date_print('PROBLEM LOADING AGGREGATION')
+				client.close()
+				client = init_mongo_client(REMOTE, connection_string)
+				db = client.elections
+				status = update_one_aggregation(db['agg_results'], up_dict)
+
 
 	client.close()
 
