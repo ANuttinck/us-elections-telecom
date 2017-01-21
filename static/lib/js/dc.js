@@ -4540,7 +4540,12 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             });
 
         dc.transition(paths, _chart.transitionDuration()).attr("fill", function (d, i) {
-            return _chart.getColor(data[geoJson(layerIndex).keyAccessor(d)], i);
+            if (data[geoJson(layerIndex).keyAccessor(d)] == 'Clinton') {
+                return _chart.colors()(1);
+            } else {
+                return _chart.colors()(3);
+            }
+            //Color("#000000#");//_chart.getColor(data[geoJson(layerIndex).keyAccessor(d)], i);
         });
     }
 
