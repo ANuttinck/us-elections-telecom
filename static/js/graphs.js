@@ -130,8 +130,8 @@ function makeGraphs(error, votesJson, statesJson) {
 
 
     chartCandidateScore
-        .width(468)
-        .height(280)
+        .width(568)
+        .height(380)
         .slicesCap(4)
         //.innerRadius(100)
         .dimension(candidateDim)
@@ -146,6 +146,7 @@ function makeGraphs(error, votesJson, statesJson) {
             return d ? chartCandidateScore.colors()(d) : '#ccc';
         })
         .legend(dc.legend());
+        //.legend();
 
 
     totalVotesND
@@ -172,7 +173,7 @@ function makeGraphs(error, votesJson, statesJson) {
 
 
     usChart.width(1000)
-        .height(330)
+        .height(380)
         .dimension(stateDim)
         .group(candidateByState)
         .colors(d3.scale.ordinal().range(["#d60405", "#026b9c", "#07a1e8", "#fdfdfd", "#cccccc", "#70ad47", "#878485", "9bc002"]))
@@ -184,8 +185,8 @@ function makeGraphs(error, votesJson, statesJson) {
             return d.properties.name;
         })
         .projection(d3.geo.albersUsa()
-            .scale(600)
-            .translate([340, 150]))
+            .scale(750)
+            .translate([380, 180]))
         .title(function (p) {
             return "State: " + p["key"]
                 + "\n"
