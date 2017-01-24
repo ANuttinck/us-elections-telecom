@@ -113,7 +113,7 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         return d["largeElectorsWon"];
     });
 
-    var curTimeDate = d3.time.format("%H-%M");
+    var curTimeDate = d3.time.format("%H:%M");
     var latestTimeDate = curTimeDate(d3.max(electionVotes, function(d){ return d.time;}));
     $("i").html(latestTimeDate);
     //var candidate = totalVotesByState["vote"];
