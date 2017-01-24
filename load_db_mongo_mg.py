@@ -312,13 +312,19 @@ if __name__ == "__main__":
 
 	# select states
 	state_dict = state_dict[begin_state:end_state]
-
 	if REMOTE:
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
-	p = mp.Pool(8)
-	p.map(get_info, state_dict)
+	processes_extract = [mp.Process(target=get_info, args=(state,)) for state in state_dict]
+	# Run processes
+	for p in processes_extract:
+	    p.start()
+
+	# Exit the completed processes
+	for p in processes_extract:
+	    p.join()
+
 
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
