@@ -317,7 +317,7 @@ if __name__ == "__main__":
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
-	p = ml.Pool(8)
+	p = mp.Pool(8)
 	p.map(get_info, state_dict)
 
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
