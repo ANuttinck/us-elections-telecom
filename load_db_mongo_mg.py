@@ -261,6 +261,11 @@ def process_filename(x):
 	return {'full_path':x, 'time': tmp[0], 'state_name':'_'.join(tmp[1:])} 
 
 
+def get_info(state):
+	dict_votes, nb_votes_total = get_info_state(state['full_path'])
+	state.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(state['time'].split('-')[-1])})
+
+
 if __name__ == "__main__":
 
 	PASSWORD = open('mongopassword.txt', 'r', encoding='utf-8').read().strip()
@@ -312,10 +317,8 @@ if __name__ == "__main__":
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
-	for ifile in state_dict:
-
-		dict_votes, nb_votes_total = get_info_state(ifile['full_path'])
-		ifile.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(ifile['time'].split('-')[-1])})
+	p = ml.Pool(8)
+	p.map(get_info, state_dict)
 
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
