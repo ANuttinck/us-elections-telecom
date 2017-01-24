@@ -317,6 +317,9 @@ if __name__ == "__main__":
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
+	for istate in state_dict:
+		get_info(istate)
+	'''	
 	processes_extract = [mp.Process(target=get_info, args=(state,)) for state in state_dict]
 	# Run processes
 	for p in processes_extract:
@@ -325,10 +328,10 @@ if __name__ == "__main__":
 	# Exit the completed processes
 	for p in processes_extract:
 	    p.join()
+	'''
+	#pdb.set_trace()
 
-	pdb.set_trace()
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
-
 
 	if not AGGREGATE:
 
