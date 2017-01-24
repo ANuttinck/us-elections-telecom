@@ -148,7 +148,6 @@ def compute_aggregations(dict_state):
 				db = client.elections
 				status = update_one_aggregation(db['agg_results'], up_dict)
 
-
 	client.close()
 
 
@@ -366,7 +365,8 @@ if __name__ == "__main__":
 
 	if not AGGREGATE: 
 		## add aggregation
-		processes.append(mp.Process(target=compute_aggregations, args=(state_dict,)))
+		processes.append(mp.Process(target=compute_aggregations, args=(state_dict[:25],)))
+		processes.append(mp.Process(target=compute_aggregations, args=(state_dict[25:],)))
 	
 	# Run processes
 	for p in processes:
