@@ -265,13 +265,15 @@ if __name__ == "__main__":
 
 	PASSWORD = open('mongopassword.txt', 'r', encoding='utf-8').read().strip()
 	IP_MASTER = '35.166.223.219:27017'
-	
+	DBS_NAME = 'elections'
+	LOGIN = "teamMorpho"
+
 	settings = {
-	   'host': "35.162.205.246:27017,35.167.58.61:27017,35.165.27.40:27017",
-	   'database': "elections",
-	   'username': "teamMorpho",
-	   'password': PASSWORD,
-	   'options': "replicaSet=rs0"
+    'host': "35.162.205.246:27017,35.167.58.61:27017,35.165.27.40:27017",
+    'database': DBS_NAME,
+    'username': LOGIN,
+    'password': PASSWORD,
+    'options': "replicaSet=rs0"
 	}
 	
 	#connection_string = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
