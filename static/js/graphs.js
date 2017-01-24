@@ -98,6 +98,10 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     //console.log(totalVotesByState.top(15));
 
 
+
+    // Number of votes and name of the winner in a state
+    var candidateAndVotesByState = stateDim.group().reduce(reduceAdd, reduceRemove, reduceInitial)
+
     // Compute an Array with state as key and winner as value
     var candidateByState = [];
     for (i = 0; i < candidateAndVotesByState.all().length; i++) {
@@ -106,11 +110,6 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
             value: candidateAndVotesByState.all()[i]["value"]["vote"]
         })
     };
-
-
-    // Number of votes and name of the winner in a state
-    var candidateAndVotesByState = stateDim.group().reduce(reduceAdd, reduceRemove, reduceInitial)
-
 
 
     // INDICATORS
@@ -288,8 +287,8 @@ var maxDate = new Date("2016-11-08T21:00");
         .width(500).height(200)
         .dimension(dateDim)
         //.group(voteByMinute,"Number of votes")
-        .group(ClintonByM , "Clinton")  // voteByM_Clinton
-        .stack(TrumpByM , "Trump")  // voteByM_Trump
+        .group(voteByM_Clinton , "Clinton")  // voteByM_Clinton
+        .stack(voteByM_Trump , "Trump")  // voteByM_Trump
         .renderArea(true)
         .x(d3.time.scale().domain([minDate,maxDate]))
         .elasticX(true)
