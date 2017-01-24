@@ -128,7 +128,9 @@ def compute_aggregations(dict_state):
 		for i_state in dict_state:
 			time.sleep(1)
 			state_name = i_state['state_name']
-			aggregations_results.extend([{"state": IniState.loc[state_name].values[0], "vote": res['_id'], "nb_votes": res['nb_votes']} for res in list(db['res_' + state_name].aggregate(pipeline))])
+			time_result = state['time']
+
+			aggregations_results.extend([{"time": time_result, "state": IniState.loc[state_name].values[0], "vote": res['_id'], "nb_votes": res['nb_votes']} for res in list(db['res_' + state_name].aggregate(pipeline))])
 
 		if aggregations_results == []:
 			continue
@@ -333,10 +335,6 @@ if __name__ == "__main__":
 	state_dict = [out_states.get() for p in processes_extract]
 	# sort again
 	state_dict = sorted(state_dict, key=lambda x: x['minute'])
-
-	for state in state_dict:
-		print(state['minute'])
-
 
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
