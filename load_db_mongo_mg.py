@@ -325,7 +325,7 @@ if __name__ == "__main__":
 	for p in processes_extract:
 	    p.join()
 
-	pdb.set-trac()
+	pdb.set_trace()
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
 
