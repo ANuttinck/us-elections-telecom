@@ -47,9 +47,8 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     //Clean projectsJson data
     var electionVotes = votesJson;
 
-
-    var parseDate = d3.time.format("%Y-%m-%dT%H:%M").parse;
-
+    // add time to database
+    var parseDate = d3.time.format("%Y-%m-%d-%H:%M").parse;
     electionVotes.forEach(function (d) {
       d["time"] = parseDate(d["time"]);
       //d["nb_votes_total"] = +d["nb_votes_total"];
