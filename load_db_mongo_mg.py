@@ -267,14 +267,14 @@ if __name__ == "__main__":
 	IP_MASTER = '35.166.223.219:27017'
 	
 	settings = {
-	   'host': "35.166.223.219:27017,52.26.206.44:27017,50.112.193.13:27017",
-	   'database': "election",
+	   'host': "35.162.205.246:27017,35.167.58.61:27017,35.165.27.40:27017",
+	   'database': "elections",
 	   'username': "teamMorpho",
 	   'password': PASSWORD,
 	   'options': "replicaSet=rs0"
 	}
 	
-	connection_string = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
+	#connection_string = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
 
 	connection_string = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
 
