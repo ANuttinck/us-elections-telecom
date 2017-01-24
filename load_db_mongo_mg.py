@@ -128,7 +128,7 @@ def compute_aggregations(dict_state):
 		for i_state in dict_state:
 			time.sleep(1)
 			state_name = i_state['state_name']
-			time_result = state['time']
+			time_result = i_state['time']
 
 			aggregations_results.extend([{"time": time_result, "state": IniState.loc[state_name].values[0], "vote": res['_id'], "nb_votes": res['nb_votes']} for res in list(db['res_' + state_name].aggregate(pipeline))])
 
