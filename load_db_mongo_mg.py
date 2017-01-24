@@ -320,8 +320,8 @@ if __name__ == "__main__":
 	print('Raw files analysis...')
 	# parallel
 	out_states = mp.Queue()
-	for istate in state_dict:
-		get_info(istate)
+	#for istate in state_dict:
+	#	get_info(istate)
 	
 	processes_extract = [mp.Process(target=get_info, args=(state, out_states)) for state in state_dict]
 	# Run processes
