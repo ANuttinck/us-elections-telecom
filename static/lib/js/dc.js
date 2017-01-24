@@ -4542,10 +4542,12 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
         dc.transition(paths, _chart.transitionDuration()).attr("fill", function (d, i) {
             if (data[geoJson(layerIndex).keyAccessor(d)] == 'Clinton') {
                 return _chart.colors()(1);
-            } else {
+            } else if (data[geoJson(layerIndex).keyAccessor(d)] == 'Trump') {
                 return _chart.colors()(3);
+            } else {
+                return _chart.colors()(4);
             }
-            //Color("#000000#");//_chart.getColor(data[geoJson(layerIndex).keyAccessor(d)], i);
+            //_chart.getColor(data[geoJson(layerIndex).keyAccessor(d)], i);
         });
     }
 

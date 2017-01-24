@@ -261,20 +261,27 @@ def process_filename(x):
 	return {'full_path':x, 'time': tmp[0], 'state_name':'_'.join(tmp[1:])} 
 
 
+def get_info(state):
+	dict_votes, nb_votes_total = get_info_state(state['full_path'])
+	state.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(state['time'].split('-')[-1])})
+
+
 if __name__ == "__main__":
 
 	PASSWORD = open('mongopassword.txt', 'r', encoding='utf-8').read().strip()
 	IP_MASTER = '35.166.223.219:27017'
-	
+	DBS_NAME = 'election'
+	LOGIN = "teamMorpho"
+
 	settings = {
-	   'host': "35.166.223.219:27017,52.26.206.44:27017,50.112.193.13:27017",
-	   'database': "election",
-	   'username': "teamMorpho",
-	   'password': PASSWORD,
-	   'options': "replicaSet=rs0"
+    'host': "35.162.205.246:27017,35.167.58.61:27017,35.165.27.40:27017",
+    'database': DBS_NAME,
+    'username': LOGIN,
+    'password': PASSWORD,
+    'options': "replicaSet=rs0"
 	}
 	
-	connection_string = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
+	#connection_string = "mongodb://teamMorpho:{:}@{:}/election".format(PASSWORD, IP_MASTER)
 
 	connection_string = "mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings)
 
@@ -305,16 +312,20 @@ if __name__ == "__main__":
 
 	# select states
 	state_dict = state_dict[begin_state:end_state]
-
 	if REMOTE:
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
-	for ifile in state_dict:
+	processes_extract = [mp.Process(target=get_info, args=(state,)) for state in state_dict]
+	# Run processes
+	for p in processes_extract:
+	    p.start()
 
-		dict_votes, nb_votes_total = get_info_state(ifile['full_path'])
-		ifile.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(ifile['time'].split('-')[-1])})
+	# Exit the completed processes
+	for p in processes_extract:
+	    p.join()
 
+	pdb.set-trac()
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
 
