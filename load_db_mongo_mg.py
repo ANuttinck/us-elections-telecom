@@ -96,7 +96,7 @@ def update_one_aggregation(db_collection, update_dict):
 	i_try = 0
 
 	while i_try < max_tries:
-		status_mongo = db_collection.update_one({key: update_dict[key] for key in ['vote', 'state']}, {"$set": {"nb_votes": update_dict['nb_votes']}}, upsert=True)
+		status_mongo = db_collection.update_one({key: update_dict[key] for key in ['vote', 'state']}, {"$set": {"nb_votes": update_dict['nb_votes'], "time": update_dict['time']}}, upsert=True)
 		i_try += 1
 		if status_mongo.acknowledged:
 			return 0
