@@ -262,9 +262,10 @@ def process_filename(x):
 	return {'full_path':x, 'time': tmp[0], 'state_name':'_'.join(tmp[1:])} 
 
 
-def get_info(state):
+def get_info(state, out_states):
 	dict_votes, nb_votes_total = get_info_state(state['full_path'])
 	state.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(state['time'].split('-')[-1])})
+	out_states.put(state)
 
 
 if __name__ == "__main__":
@@ -317,10 +318,12 @@ if __name__ == "__main__":
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
+	# parallel
+	out_states = mp.Queue()
 	for istate in state_dict:
 		get_info(istate)
-	'''	
-	processes_extract = [mp.Process(target=get_info, args=(state,)) for state in state_dict]
+	
+	processes_extract = [mp.Process(target=get_info, args=(state, out_states)) for state in state_dict]
 	# Run processes
 	for p in processes_extract:
 	    p.start()
@@ -328,8 +331,12 @@ if __name__ == "__main__":
 	# Exit the completed processes
 	for p in processes_extract:
 	    p.join()
-	'''
-	#pdb.set_trace()
+
+	state_dict = [out_states.get() for p in processes_extract]
+	
+	for state in state_dict:
+		print(state['minute'])
+
 
 	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
@@ -351,7 +358,7 @@ if __name__ == "__main__":
 		state_dict.extend(splited_states)
 
 	
-	### array monitor
+	### array monitor as gloval shared variable 
 	shared_array_base = mp.Array(ctypes.c_double, len(state_dict))
 	PROGRESS = np.ctypeslib.as_array(shared_array_base.get_obj())
 
