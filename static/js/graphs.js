@@ -3,7 +3,6 @@ setInterval(function () {
         .defer(d3.json, "/election/votes")
         .defer(d3.json, "static/geojson/us-states.json")
         .defer(d3.json, "static/geojson/largeElectors.json")
-        .defer(d3.json, "static/geojson/abstentionRate.json")
         .await(makeGraphs/*dc.redrawAll()*/)
 }, 60000);
 
@@ -11,7 +10,6 @@ queue()
     .defer(d3.json, "/election/votes")
     .defer(d3.json, "static/geojson/us-states.json")
     .defer(d3.json, "static/geojson/largeElectors.json")
-    .defer(d3.json, "static/geojson/abstentionRate.json")
     .await(makeGraphs);
 
 function reduceInitial() {
@@ -40,15 +38,13 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
 
     // get the largeElectors
     var largeElectorsByState = largeElectors["features"];
-    //largeElectorsByState.forEach(function(d) {
-    //  d["value"] = +d["value"];
-    //})
+
 
     //Clean projectsJson data
     var electionVotes = votesJson;
 
     // add time to database
-    var parseDate = d3.time.format("%Y-%m-%dT%H:%M").parse;
+    var parseDate = d3.time.format("%Y-%m-%d-%H-%M").parse;
     electionVotes.forEach(function (d) {
       d["time"] = parseDate(d["time"]);
       //d["nb_votes_total"] = +d["nb_votes_total"];
@@ -70,12 +66,10 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     };
 
 
-
     //Create a Crossfilter instance
     var ndx = crossfilter(electionVotes);
 
     //Define Dimensions
-    //var voteDim = ndx.dimension(function(d) { return d["nb_votes"]; });
     var stateDim = ndx.dimension(function (d) {
         return d["state"];
     });
@@ -119,7 +113,7 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         return d["largeElectorsWon"];
     });
 
-    var curTimeDate = d3.time.format("%H:%M");
+    var curTimeDate = d3.time.format("%H-%M");
     var latestTimeDate = curTimeDate(d3.max(electionVotes, function(d){ return d.time;}));
     $("i").html(latestTimeDate);
     //var candidate = totalVotesByState["vote"];
@@ -160,7 +154,7 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
 
 ////// TIME CHART /////
 // Number of votes per candidate among time
-var TrumpVotesByMinute = dateDim.group().reduce(
+/*var TrumpVotesByMinute = dateDim.group().reduce(
 
   function(p, v) {
 
@@ -171,15 +165,11 @@ var TrumpVotesByMinute = dateDim.group().reduce(
   },
 
   function(p, v) {
-    /*if (v["vote"]=="Clinton") {
-      p =- v["nb_votes"];
-    }*/
     return p;
   },
 
 function() {
   return 0
-      //date: parseDate("2016-11-08T20:00"),
     ;
 });
 
@@ -192,24 +182,19 @@ var ClintonVotesByMinute = dateDim.group().reduce(
       }
       return p;
     },
-    //function(p, v) {
-      //return p;
-    //},
+
     function(p, v) {
-      /*if (v["vote"]=="Trump") {
-        p =- v["nb_votes"];
-      }*/
+
       return p;
     },
 
   function() {
     return 0
-        //value: 0
-        //date: parseDate("2016-11-08T20:00"),
       ;
-    });
+    });*/
 
-console.log(TrumpVotesByMinute);
+
+
 // Compute an Array with state as key and winner as value
 /*var TrumpByM = [];
 var ClintonByM = [];
@@ -312,6 +297,7 @@ for (i = 1; i < TrumpVotesByMinute.all().length; i++) {
         .elasticY(true)
         .brushOn(false)
         .margins({top: 20, right: 40, bottom: 50, left: 70})
+        .colors(["#026b9c", "#d60405"])
         .legend(dc.legend().x(150).y(10).itemHeight(13).gap(5));
 
 
