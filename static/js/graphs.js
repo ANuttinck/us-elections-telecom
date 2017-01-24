@@ -19,6 +19,7 @@ function reduceInitial() {
     };
 };
 
+
 function reduceAdd(p, v) {
     if (parseInt(p["nb_votes"]) < parseInt(v["nb_votes"])) {
         p["nb_votes"] = v["nb_votes"]
@@ -30,23 +31,6 @@ function reduceAdd(p, v) {
 
 function reduceRemove(p, v) {
     return p;
-};
-
-
-function reduceInitialCandidate() {
-    return vote = "", nb_votes = 0;
-};
-
-function reduceAddCandidate(vote, nb_votes, vote2, nb_votes2) {
-    if (parseInt(nb_votes) < parseInt(nb_votes2)) {
-        nb_votes = nb_votes2
-        vote = vote2
-    }
-    return vote, nb_votes;
-};
-
-function reduceRemoveCandidate(vote, nb_votes, vote2, nb_votes2) {
-    return vote, nb_votes;
 };
 
 
@@ -63,12 +47,28 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     //electionVotes.forEach(function (d) {
     //    d["nb_votes_total"] = +d["nb_votes_total"];
     //});
-    //console.log(electionVotes);
 
+
+
+    for (i = 0; i < electionVotes.length; i++) {
+      for (j = 0; j < largeElectorsByState.length; j++) {
+        if(electionVotes[i]["state"] == largeElectorsByState[j]["key"]){
+          if(electionVotes[i]["vote"] == largeElectorsByState[j]["vote"]){
+            electionVotes[i]["largeElectorsWon"] = largeElectorsByState[j]["value"];
+          }
+          else if(electionVotes[i]["vote"] != "Clinton" && electionVotes[i]["vote"] != "Trump"){
+            electionVotes[i]["largeElectorsWon"] = 0;
+          }
+        }
+      }
+    };
     console.log(electionVotes);
+    console.log(largeElectorsByState);
+
+
+
     //Create a Crossfilter instance
     var ndx = crossfilter(electionVotes);
-    var ndx2 = crossfilter(largeElectorsByState);
 
     //Define Dimensions
     //var voteDim = ndx.dimension(function(d) { return d["nb_votes"]; });
@@ -92,20 +92,12 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
 
 
 
-    // define number of large electors by state
-    var totalLargeElectorsByState = totalVotesByState
-    for (i = 0; i < totalLargeElectorsByState.all().length; i++) {
-      for(j = 0; j < largeElectorsByState.length; j++){
-        if(totalLargeElectorsByState.all()[i]["key"] == largeElectorsByState[j]["key"]){
-          totalLargeElectorsByState.all()[i]["value"] = largeElectorsByState[j]["value"];
-        }
-      }
-    }
-
 
     // Number of votes and name of the winner in a state
     var candidateAndVotesByState = stateDim.group().reduce(reduceAdd, reduceRemove, reduceInitial)
-    //console.log(candidateAndVotesByState.top(15));
+
+
+
 
 
     // Compute an Array with state as key and winner as value
@@ -118,18 +110,22 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     }
     ;
 
+
     //console.log(candidateByState)
 
 
+    // INDICATORS
     var all = ndx.groupAll();
     var totalVotes = ndx.groupAll().reduceSum(function (d) {
         return d["nb_votes"];
     });
 
-    var all = ndx2.groupAll();
-    var totalLargeElectors = ndx2.groupAll().reduceSum(function (d) {
-        return d["value"];
+    var all = ndx.groupAll();
+    console.log(all.value());
+    var totalLargeElectors = ndx.groupAll().reduceSum(function (d) {
+        return d["largeElectorsWon"];
     });
+    console.log(totalLargeElectors.value());
     //var max_state = totalVotesByState.top(1)[0].value;
 
     //var candidate = totalVotesByState["vote"];
@@ -138,7 +134,7 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     //var voteLevelChart = dc.rowChart("#vote-level-row-chart");
     var usChart = dc.geoChoroplethChart("#us-chart");
     var totalVotesND = dc.numberDisplay("#total-votes-nd");
-    var numberObsND = dc.numberDisplay("#number-obs-nd");
+    var numberLargeElectors = dc.numberDisplay("#number-large-electors");
     var chartCandidateScore = dc.pieChart("#candidate-score");
 
 
@@ -150,6 +146,9 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         return d["nb_votes"];
     });
 
+    var numElectorsByCandidate = candidateDim.group().reduceSum(function (d) {
+        return d["largeElectorsWon"];
+    });
 ////// PIE CHART
 
 
@@ -159,7 +158,8 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         .slicesCap(4)
         //.innerRadius(100)
         .dimension(candidateDim)
-        .group(numVoteByCandidate)
+        //.group(numVoteByCandidate)
+        .group(numElectorsByCandidate)
         .colors(d3.scale.ordinal()
             .domain(["Trump", "Clinton", "Johnson", "Blanc", "Others", "Stein", "McMullin", "Castle"])
             .range(["#d60405", "#026b9c", "#07a1e8", "#eeeeee", "#cccccc", "#70ad47", "#878485", "9bc002"]))
@@ -181,7 +181,7 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         .group(totalVotes)
         .formatNumber(d3.format(".3s"));
 
-    numberObsND
+    numberLargeElectors
         .formatNumber(d3.format("d"))
         .valueAccessor(function (d) {
             return d;
