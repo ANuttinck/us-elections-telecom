@@ -265,7 +265,7 @@ if __name__ == "__main__":
 
 	PASSWORD = open('mongopassword.txt', 'r', encoding='utf-8').read().strip()
 	IP_MASTER = '35.166.223.219:27017'
-	DBS_NAME = 'elections'
+	DBS_NAME = 'election'
 	LOGIN = "teamMorpho"
 
 	settings = {
