@@ -320,10 +320,8 @@ if __name__ == "__main__":
 	print('Raw files analysis...')
 	# parallel
 	out_states = mp.Queue()
-	#for istate in state_dict:
-	#	get_info(istate)
-	
 	processes_extract = [mp.Process(target=get_info, args=(state, out_states)) for state in state_dict]
+	
 	# Run processes
 	for p in processes_extract:
 	    p.start()
@@ -333,7 +331,9 @@ if __name__ == "__main__":
 	    p.join()
 
 	state_dict = [out_states.get() for p in processes_extract]
-	
+	# sort again
+	state_dict = sorted(state_dict, key=lambda x: x['minute'])
+
 	for state in state_dict:
 		print(state['minute'])
 
