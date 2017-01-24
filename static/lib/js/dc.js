@@ -4474,7 +4474,6 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
 
     function generateLayeredData() {
         var data = {};
-        //console.log(_chart.group());
         var groupAll = _chart.group();//.all();
         for (var i = 0; i < groupAll.length; ++i) {
             data[_chart.keyAccessor()(groupAll[i])] = _chart.valueAccessor()(groupAll[i]);
@@ -4540,9 +4539,7 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             });
 
         dc.transition(paths, _chart.transitionDuration()).attr("fill", function (d, i) {
-            console.log(_chart.colorDomain().range());
             var index = _chart.colorDomain().range().indexOf(data[geoJson(layerIndex).keyAccessor(d)]);
-            console.log(index);
             if(index != -1) {
               return _chart.colors().range()[index];
             } else {
