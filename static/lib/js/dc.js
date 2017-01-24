@@ -2555,7 +2555,6 @@ dc.stackableChart = function (_chart) {
             _allValueAccessors = [];
 
             _allValueAccessors.push(_chart.valueAccessor());
-
             for (var i = 0; i < _groupStack.size(); ++i)
                 _allValueAccessors.push(_groupStack.getAccessorByIndex(i));
         }
@@ -2624,6 +2623,7 @@ dc.stackableChart = function (_chart) {
     _chart.allKeyAccessors = function () {
         if (_allKeyAccessors === null) {
             _allKeyAccessors = [];
+
 
             _allKeyAccessors.push(_chart.keyAccessor());
 
@@ -4540,14 +4540,14 @@ dc.geoChoroplethChart = function (parent, chartGroup) {
             });
 
         dc.transition(paths, _chart.transitionDuration()).attr("fill", function (d, i) {
-            if (data[geoJson(layerIndex).keyAccessor(d)] == 'Clinton') {
-                return _chart.colors()(1);
-            } else if (data[geoJson(layerIndex).keyAccessor(d)] == 'Trump') {
-                return _chart.colors()(3);
+            console.log(_chart.colorDomain().range());
+            var index = _chart.colorDomain().range().indexOf(data[geoJson(layerIndex).keyAccessor(d)]);
+            console.log(index);
+            if(index != -1) {
+              return _chart.colors().range()[index];
             } else {
-                return _chart.colors()(4);
+              return _chart.colors().range()[4];
             }
-            //_chart.getColor(data[geoJson(layerIndex).keyAccessor(d)], i);
         });
     }
 
