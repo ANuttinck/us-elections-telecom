@@ -48,11 +48,12 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     var electionVotes = votesJson;
 
     // add time to database
-    var parseDate = d3.time.format("%Y-%m-%d-%H:%M").parse;
+    var parseDate = d3.time.format("%Y-%m-%dT%H:%M").parse;
     electionVotes.forEach(function (d) {
       d["time"] = parseDate(d["time"]);
       //d["nb_votes_total"] = +d["nb_votes_total"];
     });
+
 
     // Add Large Electors to the data
     for (i = 0; i < electionVotes.length; i++) {
@@ -94,13 +95,10 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     var totalVotesByState = stateDim.group().reduceSum(function (d) {
         return d["nb_votes"];
     });
-    //console.log(totalVotesByState.top(15));
-
 
 
     // Number of votes and name of the winner in a state
     var candidateAndVotesByState = stateDim.group().reduce(reduceAdd, reduceRemove, reduceInitial)
-
     // Compute an Array with state as key and winner as value
     var candidateByState = [];
     for (i = 0; i < candidateAndVotesByState.all().length; i++) {
@@ -109,7 +107,6 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
             value: candidateAndVotesByState.all()[i]["value"]["vote"]
         })
     };
-
 
     // INDICATORS
     var all = ndx.groupAll();
@@ -121,9 +118,12 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     var totalLargeElectors = ndx.groupAll().reduceSum(function (d) {
         return d["largeElectorsWon"];
     });
-    //var max_state = totalVotesByState.top(1)[0].value;
 
+    var curTimeDate = d3.time.format("%H:%M");
+    var latestTimeDate = curTimeDate(d3.max(electionVotes, function(d){ return d.time;}));
+    $("i").html(latestTimeDate);
     //var candidate = totalVotesByState["vote"];
+    // console.log(latestTimeDate);
 
     //Charts
     //var voteLevelChart = dc.rowChart("#vote-level-row-chart");
@@ -131,7 +131,9 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     var totalVotesND = dc.numberDisplay("#total-votes-nd");
     var numberLargeElectors = dc.numberDisplay("#number-large-electors");
     var chartCandidateScore = dc.pieChart("#candidate-score");
-    var chartVoteCandidate = dc.barChart("#candidate-votes")
+    var chartVoteCandidate = dc.barChart("#candidate-votes");
+    var timeResultsChart  = dc.lineChart("#chart-line-resultsperminute");
+
 
 
 ////// PIE CHART /////
@@ -161,24 +163,24 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
 var TrumpVotesByMinute = dateDim.group().reduce(
 
   function(p, v) {
+
     if(v["vote"]=="Clinton"){
-      p["value"] =+ v["nb_votes"];
+      p =+ v["nb_votes"];
     }
     return p;
   },
 
   function(p, v) {
-    if (v["vote"]=="Clinton") {
-      p["value"] =- v["nb_votes"];
-    }
+    /*if (v["vote"]=="Clinton") {
+      p =- v["nb_votes"];
+    }*/
     return p;
   },
 
 function() {
-  return {
-      value: 0
+  return 0
       //date: parseDate("2016-11-08T20:00"),
-    };
+    ;
 });
 
 
@@ -186,7 +188,7 @@ var ClintonVotesByMinute = dateDim.group().reduce(
 
     function(p, v) {
       if (v["vote"]=="Trump") {
-        p["value"] =+ v["nb_votes"];
+        p =+ v["nb_votes"];
       }
       return p;
     },
@@ -194,38 +196,39 @@ var ClintonVotesByMinute = dateDim.group().reduce(
       //return p;
     //},
     function(p, v) {
-      if (v["vote"]=="Trump") {
-        p["value"] =- v["nb_votes"];
-      }
+      /*if (v["vote"]=="Trump") {
+        p =- v["nb_votes"];
+      }*/
       return p;
     },
 
   function() {
-    return {
-        value: 0
+    return 0
+        //value: 0
         //date: parseDate("2016-11-08T20:00"),
-      };
+      ;
     });
 
-
+console.log(TrumpVotesByMinute);
 // Compute an Array with state as key and winner as value
-var TrumpByM = [];
+/*var TrumpByM = [];
 var ClintonByM = [];
 for (i = 0; i < ClintonVotesByMinute.all().length; i++) {
     ClintonByM.push({
         key: ClintonVotesByMinute.all()[i]["key"],
-        value: ClintonVotesByMinute.all()[i]["value"]["value"]
+        value: ClintonVotesByMinute.all()[i]["value"]
     });
     TrumpByM.push({
         key: TrumpVotesByMinute.all()[i]["key"],
-        value: TrumpVotesByMinute.all()[i]["value"]["value"]
+        value: TrumpVotesByMinute.all()[i]["value"]
     });
-};
+};*/
 
 
 // Number of votes and name of the winner in a state
-var timeResultsChart  = dc.lineChart("#chart-line-resultsperminute");
 //var voteByMinute = dateDim.group().reduceSum(function(d) {return d.nb_votes;});
+var testClinton = 0;
+var testTrump = 0;
 var voteByM_Clinton=dateDim.group().reduceSum(function(d) {
   if (d.vote==="Clinton") {
     return d.nb_votes;}
@@ -240,9 +243,21 @@ var voteByM_Trump=dateDim.group().reduceSum(function(d) {
   });
 var minDate = new Date("2016-11-08T20:00");
 var maxDate = new Date("2016-11-08T21:00");
+
+/*var votesClintonCum = ClintonVotesByMinute;
+for (i = 1; i < ClintonVotesByMinute.all().length; i++) {
+    votesClintonCum.all()[i]["value"] = ClintonVotesByMinute.all()[i-1]["value"] + ClintonVotesByMinute.all()[i]["value"]
+};
+var votesTrumpCum = TrumpVotesByMinute;
+for (i = 1; i < TrumpVotesByMinute.all().length; i++) {
+    votesTrumpCum.all()[i]["value"] = TrumpVotesByMinute.all()[i-1]["value"] + TrumpVotesByMinute.all()[i]["value"]
+};*/
+
 ////// TIME CHART /////
 
-
+//console.log(votesClintonCum.all());
+//console.log(votesTrumpCum.all());
+//////// PLOTTING //////
     chartCandidateScore
         .width(568)
         .height(380)
@@ -282,8 +297,11 @@ var maxDate = new Date("2016-11-08T21:00");
         .formatNumber(d3.format(".3s"));
 
 
+
+
     timeResultsChart
-        .width(500).height(200)
+        .width(650)
+        .height(380)
         .dimension(dateDim)
         //.group(voteByMinute,"Number of votes")
         .group(voteByM_Clinton , "Clinton")  // voteByM_Clinton
@@ -291,8 +309,10 @@ var maxDate = new Date("2016-11-08T21:00");
         .renderArea(true)
         .x(d3.time.scale().domain([minDate,maxDate]))
         .elasticX(true)
+        .elasticY(true)
         .brushOn(false)
-        .legend(dc.legend().x(60).y(10).itemHeight(13).gap(5));
+        .margins({top: 20, right: 40, bottom: 50, left: 70})
+        .legend(dc.legend().x(150).y(10).itemHeight(13).gap(5));
 
 
     chartVoteCandidate
