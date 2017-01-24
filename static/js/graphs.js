@@ -62,8 +62,8 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         }
       }
     };
-    console.log(electionVotes);
-    console.log(largeElectorsByState);
+    //console.log(electionVotes);
+    //console.log(largeElectorsByState);
 
 
 
@@ -89,8 +89,6 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
         return d["nb_votes"];
     });
     //console.log(totalVotesByState.top(15));
-
-
 
 
     // Number of votes and name of the winner in a state
@@ -125,7 +123,6 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     var totalLargeElectors = ndx.groupAll().reduceSum(function (d) {
         return d["largeElectorsWon"];
     });
-    console.log(totalLargeElectors.value());
     //var max_state = totalVotesByState.top(1)[0].value;
 
     //var candidate = totalVotesByState["vote"];
@@ -136,20 +133,27 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     var totalVotesND = dc.numberDisplay("#total-votes-nd");
     var numberLargeElectors = dc.numberDisplay("#number-large-electors");
     var chartCandidateScore = dc.pieChart("#candidate-score");
+    var chartVoteCandidate = dc.barChart("#candidate-votes")
 
 
-////// PIE CHART
-    var candidateDim = ndx.dimension(function (d) {
-        return d["vote"];
-    });
-    var numVoteByCandidate = candidateDim.group().reduceSum(function (d) {
-        return d["nb_votes"];
-    });
+////// PIE CHART /////
 
     var numElectorsByCandidate = candidateDim.group().reduceSum(function (d) {
         return d["largeElectorsWon"];
     });
-////// PIE CHART
+////// PIE CHART /////
+
+
+////// BAR CHART /////
+    var candidateDim = ndx.dimension(function (d) {
+        return d["vote"];
+    });
+
+    var numVoteByCandidate = candidateDim.group().reduceSum(function (d) {
+        return d["nb_votes"];
+    });
+
+////// BAR CHART /////
 
 
     chartCandidateScore
@@ -196,6 +200,28 @@ function makeGraphs(error, votesJson, statesJson, largeElectors) {
     //  .dimension(voteDim)
     //  .group(numVotesByState)
     //  .xAxis().ticks(4);
+
+
+    chartVoteCandidate
+        .width(650)
+        .height(380)
+        .margins({top: 10, right: 10, bottom: 30, left: 100})
+        .dimension(candidateDim)
+        .group(numVoteByCandidate)
+        .x(d3.scale.ordinal().domain(["Trump", "Clinton", "Johnson", "Blanc", "Autre", "Stein", "McMullin", "Castle"]))
+        .colors(d3.scale.ordinal().domain(["Trump", "Clinton", "Johnson", "Blanc", "Autre", "Stein", "McMullin", "Castle"])
+                                  .range(["#d60405", "#026b9c", "#07a1e8", "#eeeeee", "#cccccc", "#70ad47", "#878485", "9bc002"]))
+        .xUnits(dc.units.ordinal)
+        .colorAccessor(function (d) {
+            return d.data.key
+        })
+        .colorCalculator(function (d) {
+            return d ? chartVoteCandidate.colors()(d) : '#ccc';
+        })
+        .yAxisLabel("Number of votes")
+        //.yAxis().tickFormat()
+        .elasticY(true)
+        .gap(10);
 
 
     usChart
