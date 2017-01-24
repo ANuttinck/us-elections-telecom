@@ -12,6 +12,7 @@ import argparse
 import ipdb
 import copy
 import ctypes
+import pdb
 
 
 
@@ -127,7 +128,9 @@ def compute_aggregations(dict_state):
 		for i_state in dict_state:
 			time.sleep(1)
 			state_name = i_state['state_name']
-			aggregations_results.extend([{"state": IniState.loc[state_name].values[0], "vote": res['_id'], "nb_votes": res['nb_votes']} for res in list(db['res_' + state_name].aggregate(pipeline))])
+			time_result = i_state['time']
+
+			aggregations_results.extend([{"time": time_result, "state": IniState.loc[state_name].values[0], "vote": res['_id'], "nb_votes": res['nb_votes']} for res in list(db['res_' + state_name].aggregate(pipeline))])
 
 		if aggregations_results == []:
 			continue
@@ -261,9 +264,10 @@ def process_filename(x):
 	return {'full_path':x, 'time': tmp[0], 'state_name':'_'.join(tmp[1:])} 
 
 
-def get_info(state):
+def get_info(state, out_states):
 	dict_votes, nb_votes_total = get_info_state(state['full_path'])
 	state.update({'dict_votes': dict_votes, 'nb_votes_total': nb_votes_total,'minute': int(state['time'].split('-')[-1])})
+	out_states.put(state)
 
 
 if __name__ == "__main__":
@@ -316,7 +320,10 @@ if __name__ == "__main__":
 		print('----LOADING THE REMOTE DATABASE----')
 
 	print('Raw files analysis...')
-	processes_extract = [mp.Process(target=get_info, args=(state,)) for state in state_dict]
+	# parallel
+	out_states = mp.Queue()
+	processes_extract = [mp.Process(target=get_info, args=(state, out_states)) for state in state_dict]
+	
 	# Run processes
 	for p in processes_extract:
 	    p.start()
@@ -325,9 +332,11 @@ if __name__ == "__main__":
 	for p in processes_extract:
 	    p.join()
 
-	pdb.set_trace()
-	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
+	state_dict = [out_states.get() for p in processes_extract]
+	# sort again
+	state_dict = sorted(state_dict, key=lambda x: x['minute'])
 
+	REF_TIME = time.time() - DELAY_LOADING * state_dict[0]['minute']
 
 	if not AGGREGATE:
 
@@ -347,7 +356,7 @@ if __name__ == "__main__":
 		state_dict.extend(splited_states)
 
 	
-	### array monitor
+	### array monitor as gloval shared variable 
 	shared_array_base = mp.Array(ctypes.c_double, len(state_dict))
 	PROGRESS = np.ctypeslib.as_array(shared_array_base.get_obj())
 
