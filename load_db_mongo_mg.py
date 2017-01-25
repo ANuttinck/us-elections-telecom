@@ -365,8 +365,9 @@ if __name__ == "__main__":
 
 	if not AGGREGATE: 
 		## add aggregation
-		processes.append(mp.Process(target=compute_aggregations, args=(state_dict[:25],)))
-		processes.append(mp.Process(target=compute_aggregations, args=(state_dict[25:],)))
+		nb_states_2 = np.floor(len(state_dict) / 2)
+		processes.append(mp.Process(target=compute_aggregations, args=(state_dict[:nb_states_2],)))
+		processes.append(mp.Process(target=compute_aggregations, args=(state_dict[nb_states_2:],)))
 	
 	# Run processes
 	for p in processes:
