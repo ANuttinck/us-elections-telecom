@@ -8,7 +8,7 @@ from bson.json_util import dumps
 app = Flask(__name__)
 
 DBS_NAME = 'election'
-COLLECTION_NAME = 'votes'
+COLLECTION_NAME = 'agg_results'
 PASSWORD = open("mongopassword.txt").read()
 LOGIN = "teamMorpho"
 
@@ -34,7 +34,7 @@ def index():
 @app.route("/election/votes")
 def donorschoose_projects():
     connection = MongoClient("mongodb://{username}:{password}@{host}/{database}?{options}".format(**settings))
-    collection = connection[DBS_NAME][COLLECTION_NAME]
+    collection = connection[DBS_NAME+'s'][COLLECTION_NAME]
     votes = collection.find(projection=FIELDS, limit=100000)
     json_votes = []
     for vote in votes:

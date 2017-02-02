@@ -1,0 +1,39 @@
+ssh -i "telecom-election.pem" ubuntu@ec2-52-32-173-199.us-west-2.compute.amazonaws.com #BIG (pour script Python)
+
+ssh -i "telecom-election.pem" ec2-user@ec2-35-162-205-246.us-west-2.compute.amazonaws.com #Master
+
+ssh -i "telecom-election.pem" ec2-user@ec2-35-167-58-61.us-west-2.compute.amazonaws.com #Slave 1
+
+ssh -i "telecom-election.pem" ec2-user@ec2-35-165-27-40.us-west-2.compute.amazonaws.com #Slave 2
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+MASTER		i-033bd4e2a8ff5e0ce
+8 Go		vol-04b489c0bb91ad9ea
+40 Go (new)	vol-059c28d8d8dbe6c2f
+
+SLAVE 1		i-0b9e475141c5c96b7
+8 Go		vol-084cdb7b980b9a0c0
+40Go (new)	vol-0e6af2151cd5ba8af
+
+
+SLAVE 2		i-0ba88962a0fc9da65
+8Go 		vol-0910c2a4a68d85773
+40Go (new) 	vol-044f278080fe28906
+
+/dev/xvda
