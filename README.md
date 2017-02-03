@@ -1,19 +1,21 @@
 # us-elections-telecom
 
-Dans le cadre du cours de bases de données non-relationnelles
-\textbf{Auteurs :} Clément Begotto, Gregory Freyd, Matthieu Guillouet, Arthur Ouaknine, Antoine Nuttinck
-\textbf{Outils :} Mongo and D3.js project
-
-Le but du projet est de produire un tableau de bord de présentation en temps réel des résultats des élections américaines.
+Dans le cadre du cours de bases de données non-relationnelles  
+  
+**Auteurs :** Clément Begotto, Gregory Freyd, Matthieu Guillouet, Arthur Ouaknine, Antoine Nuttinck  
+  
+**Outils :** Mongo and D3.js project  
+  
+Le but du projet est de produire un tableau de bord de présentation en temps réel des résultats des élections américaines.  
 
 ## Sujet
 
-Les étudiants doivent réaliser un tableau de bord (idéalement une page web, mais vous pouvez utiliser les logiciels que vous souhaitez) qui s’actualise en fonction de l’arrivée des résultats de chacun des 51 états.
+Les étudiants doivent réaliser un tableau de bord (idéalement une page web, mais vous pouvez utiliser les logiciels que vous souhaitez) qui s’actualise en fonction de l’arrivée des résultats de chacun des 51 états.  
 
 Les indicateurs habituels (nombre de suffrages exprimés, nombre de votants, abstention, le nombre de grands électeurs atteint par les candidats, …) devront figurer.
-Vous devez calculer d’autres indicateurs en plus de ces indicateurs de base.
-
-Lors de la présentation, comme lors de la présidentielle américaine de 20162, votre système sera attaqué et au moins 1 serveur sera HS. Votre tableau de bord devra toujours fournir l’information, sans dégradation et vous devrez montrer qu’un des serveur est bien HS et qu’un autre a bien pris le relais.
+Vous devez calculer d’autres indicateurs en plus de ces indicateurs de base.  
+  
+Lors de la présentation, comme lors de la présidentielle américaine de 20162, votre système sera attaqué et au moins 1 serveur sera HS. Votre tableau de bord devra toujours fournir l’information, sans dégradation et vous devrez montrer qu’un des serveur est bien HS et qu’un autre a bien pris le relais.  
 
 ## Système de grands électeurs
 
@@ -26,7 +28,7 @@ Vous trouverez 1 fichier par état. Chaque ligne correspond à 1 suffrage. Lorsq
 - état
 - nom du candidat
 
-Les résultats s’échelonnent sur 1 heure entre 20 heure et 21 heure.
+Les résultats s’échelonnent sur 1 heure entre 20 heure et 21 heure.  
 
 Les fichiers sont disponibles à l’adresse https://goo.gl/TgsCbT.
 
