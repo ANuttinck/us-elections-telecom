@@ -15,7 +15,7 @@ Les étudiants doivent réaliser un tableau de bord (idéalement une page web, m
 Les indicateurs habituels (nombre de suffrages exprimés, nombre de votants, abstention, le nombre de grands électeurs atteint par les candidats, …) devront figurer.
 Vous devez calculer d’autres indicateurs en plus de ces indicateurs de base.  
   
-Lors de la présentation, comme lors de la présidentielle américaine de 20162, votre système sera attaqué et au moins 1 serveur sera HS. Votre tableau de bord devra toujours fournir l’information, sans dégradation et vous devrez montrer qu’un des serveur est bien HS et qu’un autre a bien pris le relais.  
+Lors de la présentation, comme lors de la présidentielle américaine de 2016, votre système sera attaqué et au moins un serveur sera HS. Votre tableau de bord devra toujours fournir l’information, sans dégradation et vous devrez montrer qu’un des serveur est bien HS et qu’un autre a bien pris le relais.  
 
 ## Système de grands électeurs
 
@@ -23,12 +23,12 @@ On considère que le parti ayant remporté le plus grand nombre de voix remporte
 
 ## Données
 
-Vous trouverez 1 fichier par état. Chaque ligne correspond à 1 suffrage. Lorsque l’information est disponible, les bulletins blancs figurent dans le fichier. Une ligne se compose:
+Vous trouverez un fichier par état. Chaque ligne correspond à un suffrage. Lorsque l’information est disponible, les bulletins blancs figurent dans le fichier. Une ligne se compose:
 - moment du dépouillement
 - état
 - nom du candidat
 
-Les résultats s’échelonnent sur 1 heure entre 20 heure et 21 heure.  
+Les résultats s’échelonnent sur une heure entre 20 heure et 21 heure.  
 
 Les fichiers sont disponibles à l’adresse https://goo.gl/TgsCbT.
 
@@ -38,7 +38,7 @@ Les fichiers sont disponibles à l’adresse https://goo.gl/TgsCbT.
 - Les résultats doivent être stockés dans une des bases de données vues en cours.
 - L’application doit démarrer avec les résultats des 10 premières minutes de résultats chargés. 
 - On doit pouvoir voir les résultats se charger en temps réel.
-- Un des serveur doit devenir HS pendant la démonstration sans altérer le système.
+- Un des serveurs doit devra être HS pendant la démonstration sans altérer le système.
 - Les données seront stockées dans AWS.
 
 
@@ -49,5 +49,5 @@ Les fichiers sont disponibles à l’adresse https://goo.gl/TgsCbT.
 
 ## Sources
 
-https://fr.wikipedia.org/wiki/Élection_présidentielle_américaine_de_2016
-http://www.francetvinfo.fr/monde/usa/presidentielle/les-etats-unis-accusent-la-russie-d-avoir-pirate-des-systemes-electoraux-aux-etats-unis_1861409.html
+- https://fr.wikipedia.org/wiki/Élection_présidentielle_américaine_de_2016
+- http://www.francetvinfo.fr/monde/usa/presidentielle/les-etats-unis-accusent-la-russie-d-avoir-pirate-des-systemes-electoraux-aux-etats-unis_1861409.html
